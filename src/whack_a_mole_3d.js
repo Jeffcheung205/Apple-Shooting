@@ -4,10 +4,10 @@ window.initGame = (React, assetsUrl) => {
   const THREE = window.THREE;
   const { GLTFLoader } = window.THREE;
 
-  const MoleModel = React.memo(function MoleModel({ url, scale = [1, 1, 1], position = [0, 0, 0] }) {
+  const AppleModel = React.memo(function AppleModel({ url, scale = [1, 1, 1], position = [0, 0, 0] }) {
     const gltf = useLoader(GLTFLoader, url);
     const copiedScene = useMemo(() => gltf.scene.clone(), [gltf]);
-    
+
     useEffect(() => {
       copiedScene.scale.set(...scale);
       copiedScene.position.set(...position);
@@ -16,37 +16,37 @@ window.initGame = (React, assetsUrl) => {
     return React.createElement('primitive', { object: copiedScene });
   });
 
-  function Mole({ position, isActive, onWhack }) {
-    const moleRef = useRef();
-    const [moleY, setMoleY] = useState(-1);
+  function Apple({ position, isActive, onHit }) {
+    const appleRef = useRef();
+    const [appleY, setAppleY] = useState(-1);
 
     useFrame((state, delta) => {
-      if (moleRef.current) {
+      if (appleRef.current) {
         const targetY = isActive ? 0 : -1;
-        setMoleY(current => THREE.MathUtils.lerp(current, targetY, delta * 5));
-        moleRef.current.position.y = moleY;
+        setAppleY(current => THREE.MathUtils.lerp(current, targetY, delta * 5));
+        appleRef.current.position.y = appleY;
       }
     });
 
     return React.createElement(
       'group',
       { 
-        ref: moleRef,
+        ref: appleRef,
         position: position,
-        onClick: onWhack
+        onClick: onHit
       },
-      React.createElement(MoleModel, { 
-        url: `${assetsUrl}/mole.glb`,
-        scale: [3, 3, 3],
+      React.createElement(AppleModel, { 
+        url: `${assetsUrl}/apple.glb`,
+        scale: [1, 1, 1],
         position: [0, -0.5, 0]
       })
     );
   }
 
-  const HammerModel = React.memo(function HammerModel({ url, scale = [1, 1, 1], position = [0, 0, 0], rotation = [0, 0, 0] }) {
+  const ShooterModel = React.memo(function ShooterModel({ url, scale = [1, 1, 1], position = [0, 0, 0], rotation = [0, 0, 0] }) {
     const gltf = useLoader(GLTFLoader, url);
     const copiedScene = useMemo(() => gltf.scene.clone(), [gltf]);
-    
+
     useEffect(() => {
       copiedScene.scale.set(...scale);
       copiedScene.position.set(...position);
@@ -56,45 +56,33 @@ window.initGame = (React, assetsUrl) => {
     return React.createElement('primitive', { object: copiedScene });
   });
 
-  function Hammer() {
-    const hammerRef = useRef();
+  function Shooter() {
+    const shooterRef = useRef();
     const { camera, mouse } = useThree();
-    const [isHitting, setIsHitting] = useState(false);
-    const hitStartTime = useRef(0);
+    const [isShooting, setIsShooting] = useState(false);
 
-    useFrame((state, delta) => {
-      if (hammerRef.current) {
+    useFrame((state) => {
+      if (shooterRef.current) {
         const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
         vector.unproject(camera);
         const dir = vector.sub(camera.position).normalize();
         const distance = -camera.position.z / dir.z;
         const pos = camera.position.clone().add(dir.multiplyScalar(distance));
-        hammerRef.current.position.copy(pos);
-
-        // Hitting animation
-        if (isHitting) {
-          const elapsedTime = state.clock.getElapsedTime() - hitStartTime.current;
-          if (elapsedTime < 0.2) {
-            hammerRef.current.rotation.x = Math.PI / 2 * Math.sin(elapsedTime * Math.PI / 0.2);
-          } else {
-            setIsHitting(false);
-            hammerRef.current.rotation.x = 0;
-          }
-        }
+        shooterRef.current.position.copy(pos);
       }
     });
 
     const handleClick = () => {
-      setIsHitting(true);
-      hitStartTime.current = THREE.MathUtils.clamp(THREE.MathUtils.randFloat(0, 1), 0, 1);
+      setIsShooting(true);
+      // Logic for shooting action can be added here
     };
 
     return React.createElement(
       'group',
-      { ref: hammerRef, onClick: handleClick },
-      React.createElement(HammerModel, { 
-        url: `${assetsUrl}/hammer.glb`,
-        scale: [20, 20, 20],
+      { ref: shooterRef, onClick: handleClick },
+      React.createElement(ShooterModel, { 
+        url: `${assetsUrl}/Bow.glb`,
+        scale: [1, 1, 1],
         position: [0, 0, -2],
         rotation: [-Math.PI / 2, 0, 0]
       })
@@ -103,7 +91,7 @@ window.initGame = (React, assetsUrl) => {
 
   function Camera() {
     const { camera } = useThree();
-    
+
     useEffect(() => {
       camera.position.set(0, 10, 15);
       camera.lookAt(0, 0, 0);
@@ -112,37 +100,37 @@ window.initGame = (React, assetsUrl) => {
     return null;
   }
 
-  function WhackAMole3D() {
-    const [moles, setMoles] = useState(Array(9).fill(false));
+  function AppleShootingGame() {
+    const [apples, setApples] = useState(Array(9).fill(false));
     const [score, setScore] = useState(0);
 
     useEffect(() => {
-      const popUpMole = () => {
-        setMoles(prevMoles => {
-          const newMoles = [...prevMoles];
-          const inactiveIndices = newMoles.reduce((acc, mole, index) => !mole ? [...acc, index] : acc, []);
+      const popUpApple = () => {
+        setApples(prevApples => {
+          const newApples = [...prevApples];
+          const inactiveIndices = newApples.reduce((acc, apple, index) => !apple ? [...acc, index] : acc, []);
           if (inactiveIndices.length > 0) {
             const randomIndex = inactiveIndices[Math.floor(Math.random() * inactiveIndices.length)];
-            newMoles[randomIndex] = true;
+            newApples[randomIndex] = true;
           }
-          return newMoles;
+          return newApples;
         });
       };
 
-      const popDownMole = () => {
-        setMoles(prevMoles => {
-          const newMoles = [...prevMoles];
-          const activeIndices = newMoles.reduce((acc, mole, index) => mole ? [...acc, index] : acc, []);
+      const popDownApple = () => {
+        setApples(prevApples => {
+          const newApples = [...prevApples];
+          const activeIndices = newApples.reduce((acc, apple, index) => apple ? [...acc, index] : acc, []);
           if (activeIndices.length > 0) {
             const randomIndex = activeIndices[Math.floor(Math.random() * activeIndices.length)];
-            newMoles[randomIndex] = false;
+            newApples[randomIndex] = false;
           }
-          return newMoles;
+          return newApples;
         });
       };
 
-      const popUpInterval = setInterval(popUpMole, 1000);
-      const popDownInterval = setInterval(popDownMole, 2000);
+      const popUpInterval = setInterval(popUpApple, 1000);
+      const popDownInterval = setInterval(popDownApple, 2000);
 
       return () => {
         clearInterval(popUpInterval);
@@ -150,13 +138,13 @@ window.initGame = (React, assetsUrl) => {
       };
     }, []);
 
-    const whackMole = (index) => {
-      if (moles[index]) {
+    const hitApple = (index) => {
+      if (apples[index]) {
         setScore(prevScore => prevScore + 1);
-        setMoles(prevMoles => {
-          const newMoles = [...prevMoles];
-          newMoles[index] = false;
-          return newMoles;
+        setApples(prevApples => {
+          const newApples = [...prevApples];
+          newApples[index] = false;
+          return newApples;
         });
       }
     };
@@ -167,8 +155,8 @@ window.initGame = (React, assetsUrl) => {
       React.createElement(Camera),
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      moles.map((isActive, index) => 
-        React.createElement(Mole, {
+      apples.map((isActive, index) => 
+        React.createElement(Apple, {
           key: index,
           position: [
             (index % 3 - 1) * 4,
@@ -176,14 +164,14 @@ window.initGame = (React, assetsUrl) => {
             (Math.floor(index / 3) - 1) * 4
           ],
           isActive: isActive,
-          onWhack: () => whackMole(index)
+          onHit: () => hitApple(index)
         })
       ),
-      React.createElement(Hammer)
+      React.createElement(Shooter)
     );
   }
 
-  return WhackAMole3D;
+  return AppleShootingGame;
 };
 
-console.log('3D Whack-a-Mole game script loaded');
+console.log('3D Apple Shooting game script loaded');
