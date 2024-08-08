@@ -56,47 +56,44 @@ window.initGame = (React, assetsUrl) => {
     return React.createElement('primitive', { object: copiedScene });
   });
 
- function Shooter({ apples, setScore, setApples }) {
-  const shooterRef = useRef();
-  const { camera, mouse } = useThree();
+  function Shooter({ apples, setScore, setApples }) {
+    const shooterRef = useRef();
+    const { camera, mouse } = useThree();
 
-  useFrame(() => {
-    if (shooterRef.current) {
-      const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
-      vector.unproject(camera);
-      const dir = vector.sub(camera.position).normalize();
-      const distance = -camera.position.z / dir.z;
-      const pos = camera.position.clone().add(dir.multiplyScalar(distance));
-      shooterRef.current.position.copy(pos);
-    }
-  });
+    useFrame(() => {
+      if (shooterRef.current) {
+        const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+        vector.unproject(camera);
+        const dir = vector.sub(camera.position).normalize();
+        const distance = -camera.position.z / dir.z;
+        const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+        shooterRef.current.position.copy(pos);
+      }
+    });
 
-  const handleClick = () => {
-    // Check if any apple is currently active and within the shooter's range
-    const hitIndex = apples.findIndex((isActive) => isActive);
-    if (hitIndex !== -1) {
-      // Simulate hitting the apple
-      setScore((prevScore) => prevScore + 1);
-      setApples((prevApples) => {
-        const newApples = [...prevApples];
-        newApples[hitIndex] = false; // Deactivate the apple
-        return newApples;
-      });
-    }
-  };
- }
+    const handleClick = () => {
+      const hitIndex = apples.findIndex((isActive) => isActive);
+      if (hitIndex !== -1) {
+        setScore((prevScore) => prevScore + 1);
+        setApples((prevApples) => {
+          const newApples = [...prevApples];
+          newApples[hitIndex] = false; // Deactivate the apple
+          return newApples;
+        });
+      }
+    };
 
-  return React.createElement(
-    'group',
-    { ref: shooterRef, onClick: handleClick },
-    React.createElement(ShooterModel, { 
-      url: `${assetsUrl}/shooter.glb`,
-      scale: [1, 1, 1],
-      position: [0, 0, -2],
-      rotation: [-Math.PI / 2, 0, 0]
-    })
-  );
-}
+    return React.createElement(
+      'group',
+      { ref: shooterRef, onClick: handleClick },
+      React.createElement(ShooterModel, { 
+        url: `${assetsUrl}/shooter.glb`,
+        scale: [1, 1, 1],
+        position: [0, 0, -2],
+        rotation: [-Math.PI / 2, 0, 0]
+      })
+    );
+  }
 
   function Camera() {
     const { camera } = useThree();
@@ -176,11 +173,11 @@ window.initGame = (React, assetsUrl) => {
           onHit: () => hitApple(index)
         })
       ),
-      React.createElement(Shooter)
+      React.createElement(Shooter, { apples, setScore, setApples }) 
     );
   }
 
-  return AppleShootingGame;
+  return AppleShootingGame; 
 };
 
 console.log('3D Apple Shooting game script loaded');
