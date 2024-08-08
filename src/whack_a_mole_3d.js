@@ -61,39 +61,50 @@ window.initGame = (React, assetsUrl) => {
     const { camera, mouse } = useThree();
 
     useFrame(() => {
-      if (shooterRef.current) {
-        const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
-        vector.unproject(camera);
-        const dir = vector.sub(camera.position).normalize();
-        const distance = -camera.position.z / dir.z;
-        const pos = camera.position.clone().add(dir.multiplyScalar(distance));
-        shooterRef.current.position.copy(pos);
-      }
-    });
+    if (shooterRef.current) {
+      const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+      vector.unproject(camera);
+      const dir = vector.sub(camera.position).normalize();
+      const distance = -camera.position.z / dir.z;
+      const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+      shooterRef.current.position.copy(pos);
 
-    const handleClick = () => {
-      const hitIndex = apples.findIndex((isActive) => isActive);
-      if (hitIndex !== -1) {
-        setScore((prevScore) => prevScore + 1);
-        setApples((prevApples) => {
-          const newApples = [...prevApples];
-          newApples[hitIndex] = false; // Deactivate the apple
-          return newApples;
-        });
-      }
-    };
+      // Find the nearest active apple
+      const activeApples = apples.map((isActive, index) => isActive ? index : -1).filter(index => index !== -1);
+      if (activeApples.length > 0) {
+        const nearestAppleIndex = activeApples[0]; // For simplicity, take the first active apple
+        const applePosition = new THREE.Vector3(
+          (nearestAppleIndex % 3 - 1) * 4,
+          0,
+          (Math.floor(nearestAppleIndex / 3) - 1) * 4
+        );
 
-    return React.createElement(
-      'group',
-      { ref: shooterRef, onClick: handleClick },
-      React.createElement(ShooterModel, { 
-        url: `${assetsUrl}/Bow.glb`,
-        scale: [1, 1, 1],
-        position: [0, 0, -2],
-        rotation: [-Math.PI / 2, 0, 0]
-      })
-    );
-  }
+        const direction = applePosition.sub(shooterRef.current.position).normalize();
+        const targetQuaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, -1), direction);
+        shooterRef.current.quaternion.slerp(targetQuaternion, 0.1); // Smooth rotation
+      }
+    }
+  });
+
+  const handleClick = () => {
+    const hitIndex = apples.findIndex((isActive) => isActive);
+    if (hitIndex !== -1) {
+      setScore((prevScore) => prevScore + 1);
+      apples[hitIndex] = false; // Deactivate the apple directly
+    }
+  };
+
+  return React.createElement(
+    'group',
+    { ref: shooterRef, onClick: handleClick },
+    React.createElement(ShooterModel, { 
+      url: `${assetsUrl}/shooter.glb`,
+      scale: [1, 1, 1],
+      position: [0, 0, -2],
+      rotation: [-Math.PI / 2, 0, 0]
+    })
+  );
+}
 
   function Camera() {
     const { camera } = useThree();
