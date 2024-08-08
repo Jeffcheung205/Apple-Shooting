@@ -87,7 +87,7 @@ window.initGame = (React, assetsUrl) => {
       'group',
       { ref: shooterRef, onClick: handleClick },
       React.createElement(ShooterModel, { 
-        url: `${assetsUrl}/shooter.glb`,
+        url: `${assetsUrl}/Bow.glb`,
         scale: [1, 1, 1],
         position: [0, 0, -2],
         rotation: [-Math.PI / 2, 0, 0]
