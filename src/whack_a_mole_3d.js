@@ -96,7 +96,7 @@ window.initGame = (React, assetsUrl) => {
       rotation: [-Math.PI / 2, 0, 0]
     })
   );
-
+}
 
   function Camera() {
     const { camera } = useThree();
