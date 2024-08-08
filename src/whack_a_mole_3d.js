@@ -43,7 +43,7 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
-  const ShooterModel = React.memo(function ShooterModel({ url, scale = [5, 3, 5]], position = [0, 0, 0], rotation = [0, 0, 0] }) {
+  const ShooterModel = React.memo(function ShooterModel({ url, scale = [5, 3, 5], position = [0, 0, 0], rotation = [0, 0, 0] }) {
     const gltf = useLoader(GLTFLoader, url);
     const copiedScene = useMemo(() => gltf.scene.clone(), [gltf]);
 
