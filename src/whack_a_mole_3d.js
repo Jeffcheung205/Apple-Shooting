@@ -1,5 +1,5 @@
 window.initGame = (React, assetsUrl) => {
-  const { useState, useEffect, useRef, Suspense, useMemo } = React;
+  const { useState, useEffect, useRef, useMemo } = React;
   const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
   const { GLTFLoader } = window.THREE;
@@ -43,7 +43,7 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
-  const ShooterModel = React.memo(function ShooterModel({ url, scale = [5, 3, 5], position = [0, 0, 0], rotation = [0, 0, 0] }) {
+  const BowModel = React.memo(function BowModel({ url, scale = [1, 1, 1], position = [0, 0, 0], rotation = [0, 0, 0] }) {
     const gltf = useLoader(GLTFLoader, url);
     const copiedScene = useMemo(() => gltf.scene.clone(), [gltf]);
 
@@ -56,55 +56,55 @@ window.initGame = (React, assetsUrl) => {
     return React.createElement('primitive', { object: copiedScene });
   });
 
-  function Shooter({ apples, setScore, setApples }) {
-    const shooterRef = useRef();
+  function Bow({ apples, setScore }) {
+    const bowRef = useRef();
     const { camera, mouse } = useThree();
 
     useFrame(() => {
-    if (shooterRef.current) {
-      const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
-      vector.unproject(camera);
-      const dir = vector.sub(camera.position).normalize();
-      const distance = -camera.position.z / dir.z;
-      const pos = camera.position.clone().add(dir.multiplyScalar(distance));
-      shooterRef.current.position.copy(pos);
+      if (bowRef.current) {
+        const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+        vector.unproject(camera);
+        const dir = vector.sub(camera.position).normalize();
+        const distance = -camera.position.z / dir.z;
+        const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+        bowRef.current.position.copy(pos);
 
-      // Find the nearest active apple
-      const activeApples = apples.map((isActive, index) => isActive ? index : -1).filter(index => index !== -1);
-      if (activeApples.length > 0) {
-        const nearestAppleIndex = activeApples[0]; // For simplicity, take the first active apple
-        const applePosition = new THREE.Vector3(
-          (nearestAppleIndex % 3 - 1) * 4,
-          0,
-          (Math.floor(nearestAppleIndex / 3) - 1) * 4
-        );
+        // Find the nearest active apple
+        const activeApples = apples.map((isActive, index) => isActive ? index : -1).filter(index => index !== -1);
+        if (activeApples.length > 0) {
+          const nearestAppleIndex = activeApples[0]; // For simplicity, take the first active apple
+          const applePosition = new THREE.Vector3(
+            (nearestAppleIndex % 3 - 1) * 4,
+            0,
+            (Math.floor(nearestAppleIndex / 3) - 1) * 4
+          );
 
-        const direction = applePosition.sub(shooterRef.current.position).normalize();
-        const targetQuaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, -1), direction);
-        shooterRef.current.quaternion.slerp(targetQuaternion, 0.1); // Smooth rotation
+          const direction = applePosition.sub(bowRef.current.position).normalize();
+          const targetQuaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, -1), direction);
+          bowRef.current.quaternion.slerp(targetQuaternion, 0.1); // Smooth rotation
+        }
       }
-    }
-  });
+    });
 
-  const handleClick = () => {
-    const hitIndex = apples.findIndex((isActive) => isActive);
-    if (hitIndex !== -1) {
-      setScore((prevScore) => prevScore + 1);
-      apples[hitIndex] = false; // Deactivate the apple directly
-    }
-  };
+    const handleClick = () => {
+      const hitIndex = apples.findIndex((isActive) => isActive);
+      if (hitIndex !== -1) {
+        setScore((prevScore) => prevScore + 1);
+        apples[hitIndex] = false; // Deactivate the apple directly
+      }
+    };
 
-  return React.createElement(
-    'group',
-    { ref: shooterRef, onClick: handleClick },
-    React.createElement(ShooterModel, { 
-      url: `${assetsUrl}/Bow.glb`,
-      scale: [1, 1, 1],
-      position: [0, 0, -2],
-      rotation: [-Math.PI / 2, 0, 0]
-    })
-  );
-}
+    return React.createElement(
+      'group',
+      { ref: bowRef, onClick: handleClick },
+      React.createElement(BowModel, { 
+        url: `${assetsUrl}/Bow.glb`,
+        scale: [1, 1, 1],
+        position: [0, 0, -2],
+        rotation: [-Math.PI / 2, 0, 0]
+      })
+    );
+  }
 
   function Camera() {
     const { camera } = useThree();
@@ -155,17 +155,6 @@ window.initGame = (React, assetsUrl) => {
       };
     }, []);
 
-    const hitApple = (index) => {
-      if (apples[index]) {
-        setScore(prevScore => prevScore + 1);
-        setApples(prevApples => {
-          const newApples = [...prevApples];
-          newApples[index] = false;
-          return newApples;
-        });
-      }
-    };
-
     return React.createElement(
       React.Fragment,
       null,
@@ -181,14 +170,22 @@ window.initGame = (React, assetsUrl) => {
             (Math.floor(index / 3) - 1) * 4
           ],
           isActive: isActive,
-          onHit: () => hitApple(index)
+          onHit: () => {
+            if (isActive) {
+              setScore(prevScore => prevScore + 1);
+              setApples(prevApples => {
+                const newApples = [...prevApples];
+                newApples[index] = false; // Deactivate the apple
+                return newApples;
+              });
+            }
+          }
         })
       ),
-      React.createElement(Shooter, { apples, setScore, setApples }) 
+      React.createElement(Bow, { apples, setScore })
     );
   }
 
-  return AppleShootingGame; 
+  return AppleShootingGame;
 };
 
-console.log('3D Apple Shooting game script loaded');
