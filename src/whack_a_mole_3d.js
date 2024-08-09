@@ -4,6 +4,7 @@ window.initGame = (React, assetsUrl) => {
   const THREE = window.THREE;
   const { GLTFLoader } = window.THREE;
 
+  // Apple Model Component
   const AppleModel = React.memo(function AppleModel({ url, scale = [1, 1, 1], position = [0, 0, 0] }) {
     const gltf = useLoader(GLTFLoader, url);
     const copiedScene = useMemo(() => gltf.scene.clone(), [gltf]);
@@ -16,6 +17,7 @@ window.initGame = (React, assetsUrl) => {
     return React.createElement('primitive', { object: copiedScene });
   });
 
+  // Apple Component
   function Apple({ position, isActive, onHit }) {
     const appleRef = useRef();
     const [appleY, setAppleY] = useState(-1);
@@ -43,6 +45,7 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
+  // Bow Model Component
   const BowModel = React.memo(function BowModel({ url, scale = [1, 1, 1], position = [0, 0, 0], rotation = [0, 0, 0] }) {
     const gltf = useLoader(GLTFLoader, url);
     const copiedScene = useMemo(() => gltf.scene.clone(), [gltf]);
@@ -56,12 +59,14 @@ window.initGame = (React, assetsUrl) => {
     return React.createElement('primitive', { object: copiedScene });
   });
 
+  // Bow Component
   function Bow({ apples, setScore }) {
     const bowRef = useRef();
     const { camera, mouse } = useThree();
 
     useFrame(() => {
       if (bowRef.current) {
+        // Calculate the direction of the mouse in 3D space
         const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
         vector.unproject(camera);
         const dir = vector.sub(camera.position).normalize();
@@ -79,13 +84,17 @@ window.initGame = (React, assetsUrl) => {
             (Math.floor(nearestAppleIndex / 3) - 1) * 4
           );
 
+          // Calculate the direction from the bow to the apple
           const direction = applePosition.sub(bowRef.current.position).normalize();
           const targetQuaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, -1), direction);
-          bowRef.current.quaternion.slerp(targetQuaternion, 0.1); // Smooth rotation
+
+          // Smoothly rotate the bow towards the apple
+          bowRef.current.quaternion.slerp(targetQuaternion, 0.1); 
         }
       }
     });
 
+    // Handle click event for shooting
     const handleClick = () => {
       const hitIndex = apples.findIndex((isActive) => isActive);
       if (hitIndex !== -1) {
@@ -106,6 +115,7 @@ window.initGame = (React, assetsUrl) => {
     );
   }
 
+  // Camera Component
   function Camera() {
     const { camera } = useThree();
 
@@ -117,11 +127,13 @@ window.initGame = (React, assetsUrl) => {
     return null;
   }
 
+  // Main Game Component
   function AppleShootingGame() {
     const [apples, setApples] = useState(Array(9).fill(false));
     const [score, setScore] = useState(0);
 
     useEffect(() => {
+      // Function to randomly pop up an apple
       const popUpApple = () => {
         setApples(prevApples => {
           const newApples = [...prevApples];
@@ -134,6 +146,7 @@ window.initGame = (React, assetsUrl) => {
         });
       };
 
+      // Function to randomly pop down an apple
       const popDownApple = () => {
         setApples(prevApples => {
           const newApples = [...prevApples];
@@ -146,9 +159,11 @@ window.initGame = (React, assetsUrl) => {
         });
       };
 
+      // Set intervals for popping up and down apples
       const popUpInterval = setInterval(popUpApple, 1000);
       const popDownInterval = setInterval(popDownApple, 2000);
 
+      // Clear intervals on component unmount
       return () => {
         clearInterval(popUpInterval);
         clearInterval(popDownInterval);
@@ -188,4 +203,3 @@ window.initGame = (React, assetsUrl) => {
 
   return AppleShootingGame;
 };
-
