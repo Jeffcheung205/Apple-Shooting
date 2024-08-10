@@ -1,3 +1,9 @@
+import { extend } from '@react-three/fiber';
+import { Text } from 'three-stdlib';
+
+
+extend({ Text });
+
 window.initGame = (React, assetsUrl) => {
   const { useState, useEffect, useRef, Suspense } = React;
   const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
