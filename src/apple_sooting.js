@@ -118,6 +118,7 @@ window.initGame = (React, assetsUrl) => {
     return null;
   }
 
+  // Game logic
   function AppleShootingGame() {
     const [applePosition, setApplePosition] = useState([0, 1, 0]);
     const [score, setScore] = useState(0);
