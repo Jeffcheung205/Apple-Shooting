@@ -59,7 +59,7 @@ window.initGame = (React, assetsUrl) => {
       React.createElement('pointLight', { position: [10, 10, 10] }),
       React.createElement(Apple, { position: applePosition, ref: appleRef }),
       React.createElement(Bow, { onShoot: shootApple }),
-     React.createElement( { position: [0, 3, 0], fontSize: 1, color: 'black' }, `Score: ${score}`)
+     React.createElement(Score, { position: [0, 3, 0], fontSize: 1, color: 'black' }, `Score: ${score}`)
     );
   }
 
