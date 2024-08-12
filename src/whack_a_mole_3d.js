@@ -1,4 +1,3 @@
-
 window.initGame = (React, assetsUrl) => {
   const { useState, useEffect, useRef, Suspense } = React;
   const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
