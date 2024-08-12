@@ -19,7 +19,9 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function Bow({ onShoot }) {
-    return React.createElement(BowModel, { url: `${assetsUrl}/Bow.glb`, position: [0, 0, -2], onClick: onShoot });
+    return React.createElement(BowModel, { url: `${assetsUrl}/Bow.glb`, 
+                                          position: [0, 0, -2],
+                                          onClick: onShoot });
   }
 
   function Camera() {
@@ -57,7 +59,7 @@ window.initGame = (React, assetsUrl) => {
       React.createElement('pointLight', { position: [10, 10, 10] }),
       React.createElement(Apple, { position: applePosition, ref: appleRef }),
       React.createElement(Bow, { onShoot: shootApple }),
-      React.createElement('text', { position: [0, 3, 0], fontSize: 1, color: 'black' }, `Score: ${score}`)
+     React.createElement('text', { position: [0, 3, 0], fontSize: 1, color: 'black' }, `Score: ${score}`)
     );
   }
 
