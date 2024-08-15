@@ -4,11 +4,7 @@ window.initGame = (React, assetsUrl) => {
   const THREE = window.THREE;
   const { GLTFLoader } = window.THREE;
 
-  import { extend } from '@react-three/fiber';
-  import { Text } from '@react-three/drei';
-  extend({ Text });
-
-
+  
 
   const AppleModel = React.memo(function AppleModel({ url, scale = [1, 1, 1], position = [0, 0, 0] }) {
     const gltf = useLoader(GLTFLoader, url);
