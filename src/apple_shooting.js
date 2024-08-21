@@ -3,6 +3,7 @@ window.initGame = (React, assetsUrl) => {
   const { useFrame, useLoader, useThree } = window.ReactThreeFiber;
   const THREE = window.THREE;
   const { GLTFLoader } = window.THREE;
+  const { Text } = window.drei;
  
 
   const AppleModel = React.memo(function AppleModel({ url, scale = [1, 1, 1], position = [0, 0, 0] }) {
