@@ -117,33 +117,33 @@ window.initGame = (React, assetsUrl) => {
 
   // Game logic
  function AppleShootingGame() {
-  const [applePosition, setApplePosition] = useState([0, 1, 0]);
-  const [score, setScore] = useState(0);
-  const appleRef = useRef();
+const [applePosition, setApplePosition] = useState([0, 1, 0]);
+const [score, setScore] = useState(0);
+const appleRef = useRef();
 
-  const shootApple = () => {
-    setScore(prevScore => prevScore + 1);
-    const newPosition = [
-      (Math.random() - 0.5) * 10,
-      1 + Math.random(),
-      (Math.random() - 0.5) * 10
-    ];
-    setApplePosition(newPosition);
-  };
+const shootApple = () => {
+setScore(prevScore => prevScore + 1);
+const newPosition = [
+(Math.random() - 0.5) * 10,
+1 + Math.random(),
+(Math.random() - 0.5) * 10
+];
+setApplePosition(newPosition);
+};
 
-  return React.createElement(
-    React.Fragment,
-    null,
-    React.createElement(Camera),
-    React.createElement('ambientLight', { intensity: 0.5 }),
-    React.createElement('pointLight', { position: [10, 10, 10] }),
-    React.createElement(Apple, { position: applePosition, onShoot: shootApple }),
-    React.createElement(Bow, { onShoot: shootApple }),
-    React.createElement(Text, { position: [0, 3, 0], fontSize: 1, color: 'black' }, `Score: ${score}`)
-  );
+return React.createElement(
+React.Fragment,
+null,
+React.createElement(Camera),
+React.createElement('ambientLight', { intensity: 0.5 }),
+React.createElement('pointLight', { position: [10, 10, 10] }),
+React.createElement(Apple, { position: applePosition, onShoot: shootApple }),
+React.createElement(Bow, { onShoot: shootApple }),
+React.createElement(Text, { position: [0, 3, 0], fontSize: 1, color: 'black' }, Score: ${score})
+);
 }
 
-  return AppleShootingGame;
+return AppleShootingGame;
 };
 
 console.log('3D Apple Shooting game script loaded');
