@@ -117,8 +117,8 @@ window.initGame = (React, assetsUrl) => {
             1 + Math.random(),
             (Math.random() - 0.5) * 10
           ]);
-          setMessage(''); // Clear message after repositioning
-        }, 1000); // Delay before repositioning the apple
+          setMessage(''); 
+        }, 1000); 
       } else {
         setMessage('You missed!');
       }
