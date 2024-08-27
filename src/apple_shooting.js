@@ -37,7 +37,7 @@ window.initGame = (React, assetsUrl) => {
       },
       React.createElement(AppleModel, {
         url: `${assetsUrl}/Apple.glb`,
-        scale: [5,5,5],
+        scale: [0.5, 0.5, 0.5],
         position: [0, -0.5, 0]
       })
     );
@@ -61,6 +61,24 @@ window.initGame = (React, assetsUrl) => {
     const { camera, mouse } = useThree();
     const [isShooting, setIsShooting] = useState(false);
     const shotStartTime = useRef(0);
+    const [bowX, setBowX] = useState(0);
+    const [bowZ, setBowZ] = useState(0);
+
+    useEffect(() => {
+      const handleMouseMove = (event) => {
+        const normalizedX = (event.clientX / window.innerWidth) * 2 - 1;
+        const normalizedY = -(event.clientY / window.innerHeight) * 2 + 1;
+        const worldX = normalizedX * 5; // Adjust the multiplier for movement speed
+        const worldZ = normalizedY * 5; // Adjust the multiplier for movement speed
+
+        setBowX(worldX);
+        setBowZ(worldZ);
+      };
+
+      window.addEventListener('mousemove', handleMouseMove);
+
+      return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
 
     useFrame((state, delta) => {
       if (bowRef.current && applePosition) {
@@ -89,10 +107,10 @@ window.initGame = (React, assetsUrl) => {
 
     return React.createElement(
       'group',
-      { ref: bowRef, onClick: handleClick },
+      { ref: bowRef, onClick: handleClick, position: [bowX, 0, bowZ] },
       React.createElement(BowModel, {
         url: `${assetsUrl}/Bow.glb`,
-        scale: [15,15,15], 
+        scale: [5, 5, 5], // Make the bow smaller
         position: [0, 0, -2],
         rotation: [-Math.PI / 2, 0, 0]
       })
@@ -117,9 +135,9 @@ window.initGame = (React, assetsUrl) => {
     useEffect(() => {
       const updateApplePosition = () => {
         setApplePosition([
-          THREE.MathUtils.randFloat(-2, 2), 
+          THREE.MathUtils.randFloat(-2, 2), // Adjust the range to keep the apple closer to the bow
           -1, // Position the apple below the bow
-          THREE.MathUtils.randFloat(-2, 2) 
+          THREE.MathUtils.randFloat(-2, 2) // Adjust the range to keep the apple closer to the bow
         ]);
       };
 
