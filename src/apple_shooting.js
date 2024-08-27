@@ -56,20 +56,36 @@ window.initGame = (React, assetsUrl) => {
     return React.createElement('primitive', { object: copiedScene });
   });
 
+  const ArrowModel = React.memo(function ArrowModel({ url, scale = [1, 1, 1], position = [0, 0, 0], rotation = [0, 0, 0] }) {
+    const gltf = useLoader(GLTFLoader, url);
+    const copiedScene = useMemo(() => gltf.scene.clone(), [gltf]);
+
+    useEffect(() => {
+      copiedScene.scale.set(...scale);
+      copiedScene.position.set(...position);
+      copiedScene.rotation.set(...rotation);
+    }, [copiedScene, scale, position, rotation]);
+
+    return React.createElement('primitive', { object: copiedScene });
+  });
+
   function Bow({ applePosition, onShoot }) {
     const bowRef = useRef();
+    const arrowRef = useRef();
     const { camera, mouse } = useThree();
     const [isShooting, setIsShooting] = useState(false);
     const shotStartTime = useRef(0);
     const [bowX, setBowX] = useState(0);
     const [bowZ, setBowZ] = useState(0);
+    const [arrowPosition, setArrowPosition] = useState(null);
 
     useEffect(() => {
       const handleMouseMove = (event) => {
         const normalizedX = (event.clientX / window.innerWidth) * 2 - 1;
         const normalizedY = -(event.clientY / window.innerHeight) * 2 + 1;
-        const worldX = normalizedX * 5; // Adjust the multiplier for movement speed
-        const worldZ = normalizedY * 5; // Adjust the multiplier for movement speed
+
+        const worldX = normalizedX * 5;
+        const worldZ = normalizedY * 5;
 
         setBowX(worldX);
         setBowZ(worldZ);
@@ -82,15 +98,18 @@ window.initGame = (React, assetsUrl) => {
 
     useFrame((state, delta) => {
       if (bowRef.current && applePosition) {
-        // Point the bow towards the apple
         const targetPosition = new THREE.Vector3(...applePosition);
-        bowRef.current.lookAt(targetPosition); 
+        bowRef.current.lookAt(targetPosition);
 
-        // Shooting animation
         if (isShooting) {
           const elapsedTime = state.clock.getElapsedTime() - shotStartTime.current;
           if (elapsedTime < 0.2) {
             bowRef.current.rotation.x = Math.PI / 2 * Math.sin(elapsedTime * Math.PI / 0.2);
+            if (arrowRef.current) {
+              arrowRef.current.position.x = THREE.MathUtils.lerp(0, applePosition[0], elapsedTime / 0.2);
+              arrowRef.current.position.z = THREE.MathUtils.lerp(0, applePosition[2], elapsedTime / 0.2);
+              arrowRef.current.position.y = THREE.MathUtils.lerp(0, applePosition[1], elapsedTime / 0.2);
+            }
           } else {
             setIsShooting(false);
             bowRef.current.rotation.x = 0;
@@ -102,7 +121,7 @@ window.initGame = (React, assetsUrl) => {
     const handleClick = () => {
       setIsShooting(true);
       shotStartTime.current = THREE.MathUtils.clamp(THREE.MathUtils.randFloat(0, 1), 0, 1);
-      onShoot(); // Trigger the shoot event
+      onShoot();
     };
 
     return React.createElement(
@@ -110,9 +129,16 @@ window.initGame = (React, assetsUrl) => {
       { ref: bowRef, onClick: handleClick, position: [bowX, 0, bowZ] },
       React.createElement(BowModel, {
         url: `${assetsUrl}/Bow.glb`,
-        scale: [5, 5, 5], // Make the bow smaller
+        scale: [5, 5, 5],
         position: [0, 0, -2],
         rotation: [-Math.PI / 2, 0, 0]
+      }),
+      applePosition && React.createElement(ArrowModel, {
+        url: `${assetsUrl}/Arrow.glb`,
+        scale: [0.5, 0.5, 0.5],
+        position: [0, 0, 0],
+        rotation: [0, 0, 0],
+        ref: arrowRef
       })
     );
   }
@@ -132,18 +158,17 @@ window.initGame = (React, assetsUrl) => {
     const [applePosition, setApplePosition] = useState(null);
     const [score, setScore] = useState(0);
 
-    // Update apple position only after a shot
     const updateApplePosition = () => {
       setApplePosition([
-        THREE.MathUtils.randFloat(-2, 2), 
-        -1, 
-        THREE.MathUtils.randFloat(-2, 2) 
+        THREE.MathUtils.randFloat(-2, 2),
+        -1,
+        THREE.MathUtils.randFloat(-2, 2)
       ]);
     };
 
     const shootApple = () => {
       setScore(prevScore => prevScore + 1);
-      updateApplePosition(); // Update apple position after shooting
+      updateApplePosition();
     };
 
     return React.createElement(
