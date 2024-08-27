@@ -132,23 +132,18 @@ window.initGame = (React, assetsUrl) => {
     const [applePosition, setApplePosition] = useState(null);
     const [score, setScore] = useState(0);
 
-    useEffect(() => {
-      const updateApplePosition = () => {
-        setApplePosition([
-          THREE.MathUtils.randFloat(-2, 2), // Adjust the range to keep the apple closer to the bow
-          -1, // Position the apple below the bow
-          THREE.MathUtils.randFloat(-2, 2) // Adjust the range to keep the apple closer to the bow
-        ]);
-      };
-
-      const interval = setInterval(updateApplePosition, 2000);
-
-      return () => clearInterval(interval);
-    }, []);
+    // Update apple position only after a shot
+    const updateApplePosition = () => {
+      setApplePosition([
+        THREE.MathUtils.randFloat(-2, 2), 
+        -1, 
+        THREE.MathUtils.randFloat(-2, 2) 
+      ]);
+    };
 
     const shootApple = () => {
       setScore(prevScore => prevScore + 1);
-      setApplePosition(null); // Hide the apple after shooting
+      updateApplePosition(); // Update apple position after shooting
     };
 
     return React.createElement(
