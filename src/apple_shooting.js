@@ -37,7 +37,7 @@ window.initGame = (React, assetsUrl) => {
       },
       React.createElement(AppleModel, {
         url: `${assetsUrl}/Apple.glb`,
-        scale: [15, 15, 15],
+        scale: [5,5,5],
         position: [0, -0.5, 0]
       })
     );
