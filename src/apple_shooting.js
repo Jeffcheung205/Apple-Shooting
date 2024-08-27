@@ -56,20 +56,17 @@ window.initGame = (React, assetsUrl) => {
     return React.createElement('primitive', { object: copiedScene });
   });
 
-  function Bow() {
+  function Bow({ applePosition, onShoot }) {
     const bowRef = useRef();
     const { camera, mouse } = useThree();
     const [isShooting, setIsShooting] = useState(false);
     const shotStartTime = useRef(0);
 
     useFrame((state, delta) => {
-      if (bowRef.current) {
-        const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
-        vector.unproject(camera);
-        const dir = vector.sub(camera.position).normalize();
-        const distance = -camera.position.z / dir.z;
-        const pos = camera.position.clone().add(dir.multiplyScalar(distance));
-        bowRef.current.position.copy(pos);
+      if (bowRef.current && applePosition) {
+        // Point the bow towards the apple
+        const targetPosition = new THREE.Vector3(...applePosition);
+        bowRef.current.lookAt(targetPosition); 
 
         // Shooting animation
         if (isShooting) {
@@ -87,6 +84,7 @@ window.initGame = (React, assetsUrl) => {
     const handleClick = () => {
       setIsShooting(true);
       shotStartTime.current = THREE.MathUtils.clamp(THREE.MathUtils.randFloat(0, 1), 0, 1);
+      onShoot(); // Trigger the shoot event
     };
 
     return React.createElement(
@@ -113,52 +111,26 @@ window.initGame = (React, assetsUrl) => {
   }
 
   function AppleShooting3D() {
-    const [apples, setApples] = useState(Array(9).fill(false));
+    const [applePosition, setApplePosition] = useState(null);
     const [score, setScore] = useState(0);
 
     useEffect(() => {
-      const popUpApple = () => {
-        setApples(prevApples => {
-          const newApples = [...prevApples];
-          const inactiveIndices = newApples.reduce((acc, apple, index) => !apple ? [...acc, index] : acc, []);
-          if (inactiveIndices.length > 0) {
-            const randomIndex = inactiveIndices[Math.floor(Math.random() * inactiveIndices.length)];
-            newApples[randomIndex] = true;
-          }
-          return newApples;
-        });
+      const updateApplePosition = () => {
+        setApplePosition([
+          THREE.MathUtils.randFloat(-3, 3),
+          0,
+          THREE.MathUtils.randFloat(-3, 3)
+        ]);
       };
 
-      const popDownApple = () => {
-        setApples(prevApples => {
-          const newApples = [...prevApples];
-          const activeIndices = newApples.reduce((acc, apple, index) => apple ? [...acc, index] : acc, []);
-          if (activeIndices.length > 0) {
-            const randomIndex = activeIndices[Math.floor(Math.random() * activeIndices.length)];
-            newApples[randomIndex] = false;
-          }
-          return newApples;
-        });
-      };
+      const interval = setInterval(updateApplePosition, 2000);
 
-      const popUpInterval = setInterval(popUpApple, 1000);
-      const popDownInterval = setInterval(popDownApple, 2000);
-
-      return () => {
-        clearInterval(popUpInterval);
-        clearInterval(popDownInterval);
-      };
+      return () => clearInterval(interval);
     }, []);
 
-    const shootApple = (index) => {
-      if (apples[index]) {
-        setScore(prevScore => prevScore + 1);
-        setApples(prevApples => {
-          const newApples = [...prevApples];
-          newApples[index] = false;
-          return newApples;
-        });
-      }
+    const shootApple = () => {
+      setScore(prevScore => prevScore + 1);
+      setApplePosition(null); // Hide the apple after shooting
     };
 
     return React.createElement(
@@ -167,19 +139,15 @@ window.initGame = (React, assetsUrl) => {
       React.createElement(Camera),
       React.createElement('ambientLight', { intensity: 0.5 }),
       React.createElement('pointLight', { position: [10, 10, 10] }),
-      apples.map((isActive, index) =>
-        React.createElement(Apple, {
-          key: index,
-          position: [
-            (index % 3 - 1) * 4,
-            0,
-            (Math.floor(index / 3) - 1) * 4
-          ],
-          isActive: isActive,
-          onShot: () => shootApple(index)
-        })
-      ),
-      React.createElement(Bow)
+      applePosition && React.createElement(Apple, {
+        position: applePosition,
+        isActive: true,
+        onShot: shootApple
+      }),
+      React.createElement(Bow, {
+        applePosition: applePosition,
+        onShoot: shootApple
+      })
     );
   }
 
