@@ -37,7 +37,7 @@ window.initGame = (React, assetsUrl) => {
       },
       React.createElement(AppleModel, {
         url: `${assetsUrl}/Apple.glb`,
-        scale: [0.5, 0.5, 0.5],
+        scale: [15, 15, 15],
         position: [0, -0.5, 0]
       })
     );
@@ -92,7 +92,7 @@ window.initGame = (React, assetsUrl) => {
       { ref: bowRef, onClick: handleClick },
       React.createElement(BowModel, {
         url: `${assetsUrl}/Bow.glb`,
-        scale: [5, 5, 5], 
+        scale: [15,15,15], 
         position: [0, 0, -2],
         rotation: [-Math.PI / 2, 0, 0]
       })
