@@ -92,7 +92,7 @@ window.initGame = (React, assetsUrl) => {
       { ref: bowRef, onClick: handleClick },
       React.createElement(BowModel, {
         url: `${assetsUrl}/Bow.glb`,
-        scale: [20, 20, 20],
+        scale: [5, 5, 5], 
         position: [0, 0, -2],
         rotation: [-Math.PI / 2, 0, 0]
       })
@@ -117,9 +117,9 @@ window.initGame = (React, assetsUrl) => {
     useEffect(() => {
       const updateApplePosition = () => {
         setApplePosition([
-          THREE.MathUtils.randFloat(-3, 3),
-          0,
-          THREE.MathUtils.randFloat(-3, 3)
+          THREE.MathUtils.randFloat(-2, 2), 
+          -1, // Position the apple below the bow
+          THREE.MathUtils.randFloat(-2, 2) 
         ]);
       };
 
